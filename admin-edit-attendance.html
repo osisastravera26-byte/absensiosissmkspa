@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Absensi - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="admin-dashboard.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="admin-set-code.html" style="color: white; text-decoration: none; font-weight: 500;">Kode Akses</a>
+          <a href="admin-members.html" style="color: white; text-decoration: none; font-weight: 500;">Anggota</a>
+          <a href="admin-edit-attendance.html" style="color: white; text-decoration: none; font-weight: 500;">Edit Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="#" onclick="logout()" style="color: white; text-decoration: none; font-weight: 500;">Logout</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="admin-set-code.html">Kode Akses</a>
+        <a href="admin-members.html">Anggota</a>
+        <a href="admin-edit-attendance.html">Edit Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 1200px;">
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: white;">
+            <h4 style="margin: 0;">✏️ Edit Data Absensi</h4>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <strong>ℹ️ Info:</strong> Gunakan fitur ini untuk mengoreksi kesalahan pencatatan absensi. Hanya admin yang dapat mengubah data.
+            </div>
+
+            <!-- Date Selector -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="editDate" class="form-label"><strong>📅 Pilih Tanggal</strong></label>
+                <input type="date" class="form-control" id="editDate">
+                <small class="text-muted">Pilih tanggal untuk melihat data absensi yang ingin diedit</small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><strong>📊 Ringkasan</strong></label>
+                <div class="alert alert-secondary" style="margin-bottom: 0;">
+                  <small>
+                    Hadir: <strong id="summaryHadir">0</strong> | 
+                    Telat: <strong id="summaryTelat">0</strong> | 
+                    Tidak Hadir: <strong id="summaryTidakHadir">0</strong>
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attendance Table -->
+            <div style="overflow-x: auto;">
+              <table class="table table-striped" style="margin-bottom: 0;">
+                <thead style="background: #f8f9fa;">
+                  <tr>
+                    <th style="width: 30%;">Nama Anggota</th>
+                    <th style="width: 25%;">Status Saat Ini</th>
+                    <th style="width: 30%;">Ubah Status</th>
+                    <th style="width: 15%;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTable">
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                      Pilih tanggal untuk menampilkan data absensi
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4" style="display: flex; gap: 1rem; justify-content: flex-end;">
+              <button type="button" class="btn btn-secondary" onclick="resetEdits()">
+                ↺ Batal
+              </button>
+              <button type="button" class="btn btn-primary" onclick="saveEdits()" id="saveBtn" style="display: none;">
+                ✓ Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auto-Mark Absentees Section -->
+        <div class="card shadow-lg mt-4">
+          <div class="card-body">
+            <h5>⏰ Tandai Anggota Tidak Hadir</h5>
+            <p class="text-muted">Sistem akan otomatis menandai anggota yang tidak absen sebagai "Tidak Hadir" sesuai waktu yang ditentukan.</p>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <label for="autoMarkDate" class="form-label"><strong>Tanggal</strong></label>
+                <input type="date" class="form-control" id="autoMarkDate">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><strong>&nbsp;</strong></label>
+                <button type="button" class="btn btn-warning" onclick="autoMarkAbsentees()" style="width: 100%;">
+                  🔔 Tandai Tidak Hadir pada Jam 09:00
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    App.checkAdminAuth();
+
+    // Set today's date as default
+    const today = App.getTodayDate();
+    document.getElementById('editDate').value = today;
+    document.getElementById('autoMarkDate').value = today;
+
+    let currentEdits = {}; // Track edits: { memberId: newStatus }
+
+    // Load attendance data when date changes
+    document.getElementById('editDate').addEventListener('change', loadAttendanceData);
+
+    function loadAttendanceData() {
+      const selectedDate = document.getElementById('editDate').value;
+      const members = Storage.getAllMembers();
+      const attendance = Storage.getAttendanceByDateAsObject(selectedDate);
+
+      const tableBody = document.getElementById('attendanceTable');
+      tableBody.innerHTML = '';
+
+      if (members.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Tidak ada anggota terdaftar</td></tr>';
+        updateSummary(selectedDate);
+        return;
+      }
+
+      members.forEach(member => {
+        const record = attendance[member.id];
+        const currentStatus = record ? record.status : 'belum absen';
+        
+        let statusBadge = '';
+        switch (currentStatus) {
+          case 'hadir':
+            statusBadge = '<span class="badge bg-success">✓ Hadir</span>';
+            break;
+          case 'telat':
+            statusBadge = '<span class="badge bg-warning">⏱️ Telat</span>';
+            break;
+          case 'tidak hadir':
+            statusBadge = '<span class="badge bg-danger">✗ Tidak Hadir</span>';
+            break;
+          default:
+            statusBadge = '<span class="badge bg-secondary">⊘ Belum Absen</span>';
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <strong>${member.name}</strong>
+            ${member.position ? `<br><small class="text-muted">${member.position}</small>` : ''}
+          </td>
+          <td>${statusBadge}</td>
+          <td>
+            <select class="form-control form-control-sm" id="status_${member.id}" onchange="markEdit('${member.id}', this.value)">
+              <option value="hadir" ${currentStatus === 'hadir' ? 'selected' : ''}>✓ Hadir</option>
+              <option value="telat" ${currentStatus === 'telat' ? 'selected' : ''}>⏱️ Telat</option>
+              <option value="tidak hadir" ${currentStatus === 'tidak hadir' ? 'selected' : ''}>✗ Tidak Hadir</option>
+              <option value="belum absen" ${currentStatus === 'belum absen' ? 'selected' : ''}>⊘ Belum Absen</option>
+            </select>
+          </td>
+          <td>
+            <button type="button" class="btn btn-sm btn-danger" onclick="resetMemberStatus('${member.id}')" id="reset_${member.id}" style="display: none;">
+              ↺ Reset
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      updateSummary(selectedDate);
+    }
+
+    function markEdit(memberId, newStatus) {
+      const selectedDate = document.getElementById('editDate').value;
+      const attendanceObj = Storage.getAttendanceByDateAsObject(selectedDate);
+      const currentRecord = attendanceObj[memberId];
+      const currentStatus = currentRecord ? currentRecord.status : 'belum absen';
+
+      if (newStatus === currentStatus) {
+        delete currentEdits[memberId];
+      } else {
+        currentEdits[memberId] = newStatus;
+      }
+
+      const resetBtn = document.getElementById(`reset_${memberId}`);
+      resetBtn.style.display = Object.keys(currentEdits).includes(memberId) ? 'block' : 'none';
+
+      document.getElementById('saveBtn').style.display = Object.keys(currentEdits).length > 0 ? 'block' : 'none';
+    }
+
+    function resetMemberStatus(memberId) {
+      const selectedDate = document.getElementById('editDate').value;
+      const attendanceObj = Storage.getAttendanceByDateAsObject(selectedDate);
+      const currentRecord = attendanceObj[memberId];
+      const currentStatus = currentRecord ? currentRecord.status : 'belum absen';
+      
+      document.getElementById(`status_${memberId}`).value = currentStatus;
+      delete currentEdits[memberId];
+
+      const resetBtn = document.getElementById(`reset_${memberId}`);
+      resetBtn.style.display = 'none';
+
+      document.getElementById('saveBtn').style.display = Object.keys(currentEdits).length > 0 ? 'block' : 'none';
+    }
+
+    function resetEdits() {
+      currentEdits = {};
+      document.getElementById('saveBtn').style.display = 'none';
+      loadAttendanceData();
+      App.showAlert('Perubahan dibatalkan', 'info');
+    }
+
+    function saveEdits() {
+      const selectedDate = document.getElementById('editDate').value;
+      
+      if (Object.keys(currentEdits).length === 0) {
+        App.showAlert('Tidak ada perubahan untuk disimpan', 'warning');
+        return;
+      }
+
+      // Apply all edits
+      Object.keys(currentEdits).forEach(memberId => {
+        const newStatus = currentEdits[memberId];
+        if (newStatus === 'belum absen') {
+          // Remove the record if marking as belum absen
+          Storage.deleteAttendanceRecord(selectedDate, parseInt(memberId));
+        } else {
+          Storage.updateAttendance(parseInt(memberId), selectedDate, newStatus);
+        }
+      });
+
+      currentEdits = {};
+      document.getElementById('saveBtn').style.display = 'none';
+      loadAttendanceData();
+      App.showAlert('✓ Data absensi berhasil diubah', 'success');
+    }
+
+    function updateSummary(date) {
+      const attendance = Storage.getAttendanceByDateAsObject(date);
+      let hadir = 0, telat = 0, tidakHadir = 0;
+
+      Object.values(attendance).forEach(record => {
+        if (record.status === 'hadir') hadir++;
+        else if (record.status === 'telat') telat++;
+        else if (record.status === 'tidak hadir') tidakHadir++;
+      });
+
+      document.getElementById('summaryHadir').textContent = hadir;
+      document.getElementById('summaryTelat').textContent = telat;
+      document.getElementById('summaryTidakHadir').textContent = tidakHadir;
+    }
+
+    function autoMarkAbsentees() {
+      const selectedDate = document.getElementById('autoMarkDate').value;
+      const members = Storage.getAllMembers();
+      
+      if (members.length === 0) {
+        App.showAlert('Tidak ada anggota terdaftar', 'warning');
+        return;
+      }
+
+      const attendance = Storage.getAttendanceByDate(selectedDate);
+      let markedCount = 0;
+
+      members.forEach(member => {
+        if (!attendance[member.id]) {
+          // Mark as tidak hadir using direct method
+          let attendanceData = Storage.getData(Storage.KEYS.ATTENDANCE) || [];
+          attendanceData.push({
+            memberId: member.id,
+            date: selectedDate,
+            status: 'tidak hadir',
+            timeCheckIn: new Date().toISOString(),
+            isAutoMarked: true
+          });
+          Storage.setData(Storage.KEYS.ATTENDANCE, attendanceData);
+          markedCount++;
+        }
+      });
+
+      document.getElementById('editDate').value = selectedDate;
+      loadAttendanceData();
+      App.showAlert(`✓ ${markedCount} anggota ditandai sebagai "Tidak Hadir"`, 'success');
+    }
+
+    function logout() {
+      if (confirm('Yakin ingin logout?')) {
+        App.logoutAdmin();
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Load initial data
+    loadAttendanceData();
+  </script>
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

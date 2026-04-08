@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Struktur OSIS - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Photo Modal Styles */
+    .photo-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .photo-modal.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .photo-modal-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90vh;
+      background-color: transparent;
+    }
+
+    .photo-modal-image {
+      width: 100%;
+      height: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .photo-modal-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .photo-modal-close:hover {
+      color: #ff6b6b;
+    }
+
+    .table-photo {
+      cursor: pointer;
+      transition: filter 0.2s ease;
+      border-radius: 50%;
+    }
+
+    .table-photo:hover {
+      filter: brightness(1.2);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="admin-dashboard.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="admin-set-code.html" style="color: white; text-decoration: none; font-weight: 500;">Kode Akses</a>
+          <a href="admin-members.html" style="color: white; text-decoration: none; font-weight: 500;">Anggota</a>
+          <a href="admin-edit-attendance.html" style="color: white; text-decoration: none; font-weight: 500;">Edit Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="#" onclick="logout()" style="color: white; text-decoration: none; font-weight: 500;">Logout</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="admin-set-code.html">Kode Akses</a>
+        <a href="admin-members.html">Anggota</a>
+        <a href="admin-edit-attendance.html">Edit Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 900px;">
+        <div class="card shadow-lg mb-4">
+          <div class="card-header" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: white;">
+            <h4 style="margin: 0;">👥 Kelola Struktur OSIS</h4>
+          </div>
+          <div class="card-body">
+            <form id="osisForm">
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label for="level" class="form-label">Tingkatan *</label>
+                  <select class="form-control" id="level" required onchange="updatePositionOptions()">
+                    <option value="">-- Pilih Tingkatan --</option>
+                    <option value="pembina">Pembina</option>
+                    <option value="ketua">Ketua OSIS</option>
+                    <option value="inti">BPH (Badan Pengurus Harian)</option>
+                    <option value="sekbid">Ketua Seksi Bidang</option>
+                    <option value="member">Anggota</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6 mb-4" id="sekbidSelectContainer" style="display: none;">
+                  <label for="sekbidNum" class="form-label">Seksi Bidang *</label>
+                  <select class="form-control" id="sekbidNum">
+                    <option value="">-- Pilih Seksi --</option>
+                    <option value="1">Seksi 1</option>
+                    <option value="2">Seksi 2</option>
+                    <option value="3">Seksi 3</option>
+                    <option value="4">Seksi 4</option>
+                    <option value="5">Seksi 5</option>
+                    <option value="6">Seksi 6</option>
+                    <option value="7">Seksi 7</option>
+                    <option value="8">Seksi 8</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="intiHint" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background-color: #e8f4f8; border-left: 4px solid #0066cc; border-radius: 4px;">
+                <small style=\"color: #003d7a;\"><strong>💡 BPH (Badan Pengurus Harian) dapat berupa:</strong> Sekretaris, Wakil Sekretaris, Bendahara, atau Wakil Bendahara</small>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-4">
+                  <label for="position" class="form-label">Nama Posisi *</label>
+                  <input type="text" class="form-control" id="position" 
+                         placeholder="Contoh: Ketua, Wakil Ketua" required>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                  <label for="name" class="form-label">Nama Lengkap *</label>
+                  <input type="text" class="form-control" id="name" 
+                         placeholder="Masukkan nama lengkap" required>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="photo" class="form-label">Foto (Opsional)</label>
+                <input type="file" class="form-control" id="photo" accept="image/*">
+                <small class="text-muted">Format: JPG, PNG. Ukuran maksimal 5MB</small>
+                <div id="photoPreview" style="margin-top: 1rem; display: none;">
+                  <img id="previewImg" src="" alt="Preview" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%;">➕ Tambah Struktur</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: white;">
+            <h5 style="margin: 0;">📋 Daftar Struktur OSIS</h5>
+          </div>
+          <div class="card-body">
+            <div id="osisTableContainer">
+              <p class="text-center text-muted">Memuat data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check admin auth
+    App.checkAdminAuth();
+
+    let selectedPhoto = null;
+    console.log('Admin OSIS Structure page loaded');
+
+    // Update position options based on level
+    window.updatePositionOptions = function() {
+      const level = document.getElementById('level').value;
+      const positionInput = document.getElementById('position');
+      const sekbidContainer = document.getElementById('sekbidSelectContainer');
+      const intiHint = document.getElementById('intiHint');
+
+      // Show/hide sekbid select based on level
+      if (level === 'sekbid' || level === 'member') {
+        sekbidContainer.style.display = 'block';
+        document.getElementById('sekbidNum').required = true;
+      } else {
+        sekbidContainer.style.display = 'none';
+        document.getElementById('sekbidNum').required = false;
+      }
+
+      // Show/hide BPH hint
+      if (level === 'inti') {
+        intiHint.style.display = 'block';
+      } else {
+        intiHint.style.display = 'none';
+      }
+
+      // Set default position based on level
+      const positionMap = {
+        'pembina': 'Pembina',
+        'ketua': 'Ketua OSIS',
+        'inti': 'Sekretaris',
+        'sekbid': 'Ketua Seksi Bidang',
+        'member': 'Anggota'
+      };
+
+      if (positionMap[level]) {
+        positionInput.value = positionMap[level];
+        positionInput.placeholder = level === 'inti' ? 'Contoh: Sekretaris, Wakil Sekretaris, Bendahara, Wakil Bendahara' : 
+                                   level === 'ketua' ? 'Contoh: Ketua OSIS, Wakil Ketua' : '';
+      }
+    };
+
+    // Preview foto
+    const photoInput = document.getElementById('photo');
+    const previewImg = document.getElementById('previewImg');
+    const photoPreview = document.getElementById('photoPreview');
+
+    photoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      console.log('File selected:', file ? file.name : 'none');
+      if (file) {
+        console.log('File size:', file.size);
+        if (file.size > 5 * 1024 * 1024) {
+          App.showAlert('danger', 'Ukuran foto terlalu besar (max 5MB)');
+          e.target.value = '';
+          selectedPhoto = null;
+          photoPreview.style.display = 'none';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          selectedPhoto = event.target.result;
+          console.log('Photo loaded, selectedPhoto set, length:', selectedPhoto.length);
+          previewImg.src = selectedPhoto;
+          photoPreview.style.display = 'block';
+        };
+        reader.onerror = function() {
+          console.error('Error reading file');
+          App.showAlert('danger', 'Error membaca file');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        selectedPhoto = null;
+        photoPreview.style.display = 'none';
+      }
+    });
+
+    osisForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      console.log('Form submitted, selectedPhoto:', selectedPhoto ? 'exists' : 'null');
+
+      const level = document.getElementById('level').value;
+      const position = document.getElementById('position').value;
+      const name = document.getElementById('name').value;
+      let parentLevel = null;
+
+      if (!level || !position || !name) {
+        App.showAlert('warning', 'Tingkatan, posisi, dan nama harus diisi!');
+        return;
+      }
+
+      if ((level === 'sekbid' || level === 'member') && !document.getElementById('sekbidNum').value) {
+        App.showAlert('warning', 'Pilih seksi bidang terlebih dahulu!');
+        return;
+      }
+
+      if (level === 'sekbid' || level === 'member') {
+        parentLevel = parseInt(document.getElementById('sekbidNum').value);
+      }
+
+      try {
+        console.log('Saving with photo:', selectedPhoto ? selectedPhoto.substring(0, 50) + '...' : 'no photo');
+        Storage.addOsisPosition(position, name, level, parentLevel, selectedPhoto);
+        App.showAlert('success', 'Data struktur berhasil ditambahkan!');
+        osisForm.reset();
+        photoPreview.style.display = 'none';
+        document.getElementById('sekbidSelectContainer').style.display = 'none';
+        selectedPhoto = null;
+        loadOsisTable();
+      } catch (err) {
+        console.error('Error saving:', err);
+        App.showAlert('danger', 'Terjadi kesalahan: ' + err.message);
+      }
+    });
+
+    function loadOsisTable() {
+      const structure = Storage.getAllOsisStructure();
+      const container = document.getElementById('osisTableContainer');
+
+      if (structure.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">Belum ada data struktur OSIS</p>';
+        return;
+      }
+
+      let html = '<table class="table table-striped"><thead><tr><th style="width: 5%;">No</th><th style="width: 15%;">Foto</th><th style="width: 15%;">Tingkatan</th><th style="width: 25%;">Posisi</th><th style="width: 25%;">Nama</th><th style="width: 15%;">Aksi</th></tr></thead><tbody>';
+      
+      structure.forEach((member, index) => {
+        const photoPreview = member.photo 
+          ? `<img src="${member.photo}" alt="${member.name}" onclick="openAdminPhotoModal('${member.photo}')" class="table-photo" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">`
+          : '<span class="text-muted">-</span>';
+        
+        const levelLabel = {
+          'pembina': 'Pembina',
+          'ketua': 'Ketua OSIS',
+          'inti': 'BPH',
+          'sekbid': `Seksi ${member.parentLevel || '-'}`,
+          'member': `Anggota Seksi ${member.parentLevel || '-'}`
+        };
+
+        const level = member.level || 'member';
+        
+        html += `<tr>
+          <td>${index + 1}</td>
+          <td>${photoPreview}</td>
+          <td><small>${levelLabel[level] || level}</small></td>
+          <td><strong>${member.position}</strong></td>
+          <td><strong>${member.name}</strong></td>
+          <td>
+            <button type="button" class="btn btn-sm btn-danger" onclick="deleteOsis(${member.id})">Hapus</button>
+          </td>
+        </tr>`;
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    window.deleteOsis = function(id) {
+      if (confirm('Yakin ingin menghapus data ini?')) {
+        Storage.deleteOsisPosition(id);
+        App.showAlert('success', 'Data struktur berhasil dihapus!');
+        loadOsisTable();
+      }
+    };
+
+    function logout() {
+      if (confirm('Yakin ingin logout?')) {
+        App.logoutAdmin();
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Photo Modal Functions
+    window.openAdminPhotoModal = function(photoUrl) {
+      const modal = document.getElementById('adminPhotoModal');
+      const modalImage = document.getElementById('adminPhotoModalImage');
+      modalImage.src = photoUrl;
+      modal.classList.add('active');
+    };
+
+    window.closeAdminPhotoModal = function() {
+      const modal = document.getElementById('adminPhotoModal');
+      modal.classList.remove('active');
+    };
+
+    // Initialize modal event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('adminPhotoModal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeAdminPhotoModal();
+          }
+        });
+      }
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeAdminPhotoModal();
+        }
+      });
+    });
+
+    // Load initial data
+    loadOsisTable();
+
+    console.log('Event listeners attached, selectedPhoto initialized:', selectedPhoto);
+  </script>
+
+  <!-- Photo Modal -->
+  <div id="adminPhotoModal" class="photo-modal" onclick="closeAdminPhotoModal()">
+    <div class="photo-modal-content" onclick="event.stopPropagation()">
+      <span class="photo-modal-close" onclick="closeAdminPhotoModal()">&times;</span>
+      <img id="adminPhotoModalImage" src="" alt="Photo" class="photo-modal-image">
+    </div>
+  </div>
+
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="index.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="index.html" style="color: white; text-decoration: none; font-weight: 500;">Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="profil-osis.html" style="color: white; text-decoration: none; font-weight: 500;">Profil OSIS</a>
+          <a href="admin-login.html" style="color: white; text-decoration: none; font-weight: 500;">Admin</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="index.html">Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="profil-osis.html">Profil OSIS</a>
+        <a href="admin-login.html">Admin</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 500px;">
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: white;">
+            <h4 style="margin: 0;">🔐 Admin Login</h4>
+          </div>
+          <div class="card-body">
+            <form id="loginForm">
+              <div class="mb-4">
+                <label for="password" class="form-label">Password Admin</label>
+                <input type="password" class="form-control" id="password" 
+                       name="password" placeholder="Masukkan password admin" required>
+              </div>
+
+              <button type="submit" class="btn btn-danger" style="width: 100%; padding: 0.75rem;">
+                🔓 Login
+              </button>
+            </form>
+
+            <hr>
+
+            <div class="alert alert-info">
+              <small>
+                <strong>ℹ️ Catatan:</strong> Hubungi administrator untuk mendapatkan password admin.
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const password = document.getElementById('password').value;
+
+      if (Storage.verifyAdminPassword(password)) {
+        App.loginAdmin();
+        App.showAlert('success', 'Login berhasil! Redirecting...');
+        setTimeout(() => window.location.href = 'admin-dashboard.html', 1000);
+      } else {
+        App.showAlert('danger', 'Password salah!');
+      }
+    });
+  </script>
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

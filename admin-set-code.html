@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atur Kode Akses - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="admin-dashboard.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="admin-set-code.html" style="color: white; text-decoration: none; font-weight: 500;">Kode Akses</a>
+          <a href="admin-members.html" style="color: white; text-decoration: none; font-weight: 500;">Anggota</a>
+          <a href="admin-edit-attendance.html" style="color: white; text-decoration: none; font-weight: 500;">Edit Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="#" onclick="logout()" style="color: white; text-decoration: none; font-weight: 500;">Logout</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="admin-set-code.html">Kode Akses</a>
+        <a href="admin-members.html">Anggota</a>
+        <a href="admin-edit-attendance.html">Edit Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 700px;">
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: white;">
+            <h4 style="margin: 0;">🔑 Atur Kode Akses Harian</h4>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <strong>ℹ️ Info:</strong> Kode akses ini akan digunakan untuk absensi hari ini. Bagikan kode ini kepada semua anggota OSIS yang akan melakukan absensi.
+            </div>
+
+            <p class="text-muted">
+              <strong>📅 Tanggal Hari Ini:</strong> <span id="todayDate"></span>
+            </p>
+
+            <form id="setCodeForm">
+              <div class="mb-4">
+                <label for="code" class="form-label">Kode Akses Baru *</label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" class="form-control" id="code" 
+                         name="code" placeholder="Contoh: OSIS2024" style="flex: 1;" required>
+                  <button type="button" class="btn btn-secondary" onclick="generateCode()">
+                    🎲 Generate
+                  </button>
+                </div>
+                <small class="text-muted">Gunakan kombinasi huruf dan angka untuk keamanan lebih baik</small>
+              </div>
+
+              <button type="submit" class="btn btn-danger" style="width: 100%; padding: 0.75rem;">
+                ✓ Simpan Kode Akses
+              </button>
+            </form>
+
+            <div id="codeInfo" class="mt-4 p-3" style="background: #f8f9fa; border-radius: 8px; display: none;">
+              <h6>📌 Kode Akses Saat Ini:</h6>
+              <div class="alert alert-success" style="margin-bottom: 0;">
+                <strong id="currentCode"></strong>
+                <button type="button" class="btn btn-sm btn-secondary float-end" onclick="copyCode()">
+                  📋 Salin
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    App.checkAdminAuth();
+
+    const today = App.getTodayDate();
+    document.getElementById('todayDate').textContent = App.formatDate(today);
+
+    // Check if code already exists
+    const existingCode = Storage.getAccessCode(today);
+    if (existingCode) {
+      document.getElementById('currentCode').textContent = existingCode;
+      document.getElementById('codeInfo').style.display = 'block';
+    }
+
+    function generateCode() {
+      const code = App.generateRandomCode();
+      document.getElementById('code').value = code;
+    }
+
+    document.getElementById('setCodeForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const code = document.getElementById('code').value.trim();
+
+      if (!code) {
+        App.showAlert('warning', 'Kode akses tidak boleh kosong!');
+        return;
+      }
+
+      try {
+        Storage.setAccessCode(code, today);
+        App.showAlert('success', `Kode akses untuk hari ini berhasil diatur: ${code}`);
+        document.getElementById('currentCode').textContent = code;
+        document.getElementById('codeInfo').style.display = 'block';
+        document.getElementById('setCodeForm').reset();
+      } catch (err) {
+        App.showAlert('danger', 'Terjadi kesalahan: ' + err.message);
+      }
+    });
+
+    function copyCode() {
+      const code = document.getElementById('currentCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        App.showAlert('success', 'Kode berhasil disalin ke clipboard!');
+      });
+    }
+
+    function logout() {
+      if (confirm('Yakin ingin logout?')) {
+        App.logoutAdmin();
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

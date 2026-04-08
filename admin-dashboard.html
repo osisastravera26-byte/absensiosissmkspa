@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar" style="background: linear-gradient(135deg, #283048 0%, #859398 100%);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="admin-dashboard.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="admin-set-code.html" style="color: white; text-decoration: none; font-weight: 500;">Kode Akses</a>
+          <a href="admin-members.html" style="color: white; text-decoration: none; font-weight: 500;">Anggota</a>
+          <a href="admin-edit-attendance.html" style="color: white; text-decoration: none; font-weight: 500;">Edit Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="#" onclick="logout()" style="color: white; text-decoration: none; font-weight: 500;">Logout</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="admin-set-code.html">Kode Akses</a>
+        <a href="admin-members.html">Anggota</a>
+        <a href="admin-edit-attendance.html">Edit Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 900px;">
+        <div class="card shadow-lg" style="background: rgba(40, 48, 72, 0.95); color: white; border: 1px solid rgba(255,255,255,0.12);">
+          <div class="card-header" style="background: linear-gradient(135deg, #283048 0%, #859398 100%); color: white;">
+            <h4 style="margin: 0;">🎛️ Admin Dashboard</h4>
+          </div>
+          <div class="card-body" style="color: white;">
+            <div class="alert alert-warning">
+              <strong>⚠️ Area Admin:</strong> Hanya admin yang berwenang dapat mengakses halaman ini. Pastikan Anda keluar setelah selesai.
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h5 class="card-title">🔑 Atur Kode Akses</h5>
+                    <p class="card-text text-muted">Ubah kode akses untuk absensi harian</p>
+                    <a href="admin-set-code.html" class="btn btn-primary">Masuk</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h5 class="card-title">👥 Kelola Anggota</h5>
+                    <p class="card-text text-muted">Tambah atau hapus anggota OSIS</p>
+                    <a href="admin-members.html" class="btn btn-primary">Masuk</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h5 class="card-title">📊 Lihat Rekapan</h5>
+                    <p class="card-text text-muted">Cek statistik kehadiran anggota</p>
+                    <a href="recap.html" class="btn btn-primary">Masuk</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h5 class="card-title">📝 Form Absensi</h5>
+                    <p class="card-text text-muted">Lihat form absensi harian</p>
+                    <a href="index.html" class="btn btn-primary">Masuk</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h5 class="card-title">🎓 Struktur OSIS</h5>
+                    <p class="card-text text-muted">Atur struktur dan profil OSIS</p>
+                    <a href="admin-osis-structure.html" class="btn btn-primary">Masuk</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 p-3" style="background: #f8f9fa; border-radius: 8px;">
+              <h6>⚙️ Pengaturan Admin</h6>
+              <button class="btn btn-secondary btn-sm mt-2" onclick="changePassword()">Ubah Password Admin</button>
+              <button class="btn btn-secondary btn-sm mt-2" onclick="backupData()">📥 Backup Data</button>
+              <button class="btn btn-secondary btn-sm mt-2" onclick="restoreData()">📤 Restore Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    App.checkAdminAuth();
+
+    function logout() {
+      if (confirm('Yakin ingin logout?')) {
+        App.logoutAdmin();
+        window.location.href = 'index.html';
+      }
+    }
+
+    function changePassword() {
+      const oldPassword = prompt('Masukkan password lama:');
+      if (!oldPassword) return;
+
+      if (!Storage.verifyAdminPassword(oldPassword)) {
+        App.showAlert('danger', 'Password lama salah!');
+        return;
+      }
+
+      const newPassword = prompt('Masukkan password baru:');
+      if (!newPassword) return;
+
+      const confirmPassword = prompt('Konfirmasi password baru:');
+      if (newPassword !== confirmPassword) {
+        App.showAlert('danger', 'Password tidak cocok!');
+        return;
+      }
+
+      Storage.setAdminPassword(newPassword);
+      App.showAlert('success', 'Password berhasil diubah!');
+    }
+
+    function backupData() {
+      const data = Storage.exportData();
+      App.downloadJSON(data, `absensi-backup-${App.getTodayDate()}.json`);
+      App.showAlert('success', 'Backup data berhasil diunduh!');
+    }
+
+    function restoreData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (confirm('Yakin ingin restore data? Data yang ada akan ditimpa.')) {
+              if (Storage.importData(data)) {
+                App.showAlert('success', 'Data berhasil di-restore!');
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                App.showAlert('danger', 'Gagal restore data!');
+              }
+            }
+          } catch (err) {
+            App.showAlert('danger', 'File tidak valid!');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+  </script>
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

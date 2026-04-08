@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="index.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 85px; margin-right: 10px; position: relative; top: 4px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="index.html" style="color: white; text-decoration: none; font-weight: 500;">Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="profil-osis.html" style="color: white; text-decoration: none; font-weight: 500;">Profil OSIS</a>
+          <a href="admin-login.html" style="color: white; text-decoration: none; font-weight: 500;">Admin</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="index.html">Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="profil-osis.html">Profil OSIS</a>
+        <a href="admin-login.html">Admin</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 600px;">
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: linear-gradient(135deg, #1e90ff 0%, #0066cc 100%); color: white;">
+            <h4 style="margin: 0;">📋 Form Absensi Osis SMK Singaparna</h4>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <strong>⏰ Tanggal:</strong> <span id="todayDate"></span>
+            </div>
+
+            <form id="absensiForm">
+              <div class="mb-4">
+                <label for="member_id" class="form-label">Pilih Nama Anggota *</label>
+                <div style="position: relative;">
+                  <input type="text" class="form-control" id="memberSearch" 
+                         placeholder="Ketik nama anggota..." autocomplete="off">
+                  <div id="memberListDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; max-height: 250px; overflow-y: auto; display: none; border-radius: 0 0 8px 8px; z-index: 100;"></div>
+                </div>
+                <input type="hidden" id="member_id" name="member_id">
+                <small class="text-muted">Mulai ketik nama untuk mencari...</small>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Status Kehadiran *</label>
+                <div class="btn-group" style="width: 100%;">
+                  <input type="radio" class="btn-check" name="status" id="hadir" value="hadir" required>
+                  <label class="btn btn-outline-success" for="hadir" style="flex: 1;">
+                    ✓ Hadir
+                  </label>
+
+                  <input type="radio" class="btn-check" name="status" id="telat" value="telat" required>
+                  <label class="btn btn-outline-warning" for="telat" style="flex: 1;">
+                    ⏱ Telat
+                  </label>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="access_code" class="form-label">Kode Akses *</label>
+                <input type="text" class="form-control" id="access_code" 
+                       name="access_code" placeholder="Masukkan kode akses" style="font-size: 1.1rem;" required>
+                <small class="text-muted">Hubungi admin untuk mendapatkan kode akses hari ini</small>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1.1rem;">
+                📩 Kirim Absensi
+              </button>
+            </form>
+
+            <div id="attendanceList" class="mt-4">
+              <h5 style="margin-bottom: 1rem; font-weight: 700;">Rekapan Absensi Hari Ini:</h5>
+              <div id="attendanceTable"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const todayDate = App.getTodayDate();
+    let allMembers = [];
+
+    // Set tanggal
+    document.getElementById('todayDate').textContent = App.formatDate(todayDate);
+
+    // Load members
+    function loadMembers() {
+      allMembers = Storage.getAllMembers();
+      displayAttendance();
+    }
+
+    // Autocomplete search untuk member
+    const memberSearch = document.getElementById('memberSearch');
+    const memberListDropdown = document.getElementById('memberListDropdown');
+    const memberIdInput = document.getElementById('member_id');
+
+    memberSearch.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (searchTerm.length === 0) {
+        memberListDropdown.style.display = 'none';
+        return;
+      }
+
+      // Filter members yang cocok
+      const filtered = allMembers.filter(m => 
+        m.name.toLowerCase().includes(searchTerm)
+      );
+
+      if (filtered.length === 0) {
+        memberListDropdown.innerHTML = '<div style="padding: 1rem; text-align: center; color: #999;">Tidak ada hasil</div>';
+      } else {
+        memberListDropdown.innerHTML = filtered.map(m => `
+          <div onclick="selectMember(${m.id}, '${m.name}')" 
+               style="padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;">
+            <strong>${m.name}</strong>
+            ${m.position ? `<br><small style="color: #999;">${m.position}</small>` : ''}
+          </div>
+        `).join('');
+      }
+
+      memberListDropdown.style.display = 'block';
+    });
+
+    window.selectMember = function(id, name) {
+      memberIdInput.value = id;
+      memberSearch.value = name;
+      memberListDropdown.style.display = 'none';
+    };
+
+    // Close dropdown saat klik di luar
+    document.addEventListener('click', (e) => {
+      if (e.target !== memberSearch && e.target !== memberListDropdown) {
+        memberListDropdown.style.display = 'none';
+      }
+    });
+
+    // Display attendance rekapan
+    function displayAttendance() {
+      const table = document.getElementById('attendanceTable');
+      const attendance = Storage.getAttendanceByDate(todayDate);
+      
+      const attendanceRecords = attendance.filter(a => a.status);
+      
+      if (attendanceRecords.length === 0) {
+        table.innerHTML = '<p class="text-muted">Belum ada absensi hari ini</p>';
+        return;
+      }
+
+      let html = '<table class="table table-striped"><tbody>';
+      attendanceRecords.forEach(att => {
+        let badgeClass, statusText;
+        if (att.status === 'hadir') {
+          badgeClass = 'success';
+          statusText = '✓ Hadir';
+        } else if (att.status === 'telat') {
+          badgeClass = 'warning';
+          statusText = '⏱ Telat';
+        } else {
+          badgeClass = 'secondary';
+          statusText = '✗ Tidak Hadir';
+        }
+        const time = att.timeCheckIn ? App.formatTime(att.timeCheckIn) : '-';
+        html += `<tr>
+          <td>${att.name}</td>
+          <td><span class="badge badge-${badgeClass}">${statusText}</span></td>
+          <td class="text-muted small">${time}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      table.innerHTML = html;
+    }
+
+    // Submit form
+    document.getElementById('absensiForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const memberId = document.getElementById('member_id').value;
+      const selectedStatus = document.querySelector('input[name="status"]:checked')?.value;
+      const accessCode = document.getElementById('access_code').value;
+
+      if (!memberId) {
+        App.showAlert('warning', 'Pilih nama anggota terlebih dahulu!');
+        return;
+      }
+
+      if (!selectedStatus) {
+        App.showAlert('warning', 'Pilih status kehadiran (Hadir/Telat)!');
+        return;
+      }
+
+      // Validate access code
+      const correctCode = Storage.getAccessCode(todayDate);
+      if (!correctCode || correctCode !== accessCode) {
+        App.showAlert('danger', 'Kode akses salah!');
+        return;
+      }
+
+      try {
+        Storage.recordAttendance(memberId, todayDate, selectedStatus);
+        App.showAlert('success', 'Absensi berhasil dicatat!');
+        document.getElementById('absensiForm').reset();
+        memberSearch.value = '';
+        memberIdInput.value = '';
+        setTimeout(() => {
+          loadMembers();
+          displayAttendance();
+        }, 1000);
+      } catch (err) {
+        App.showAlert('danger', 'Terjadi kesalahan: ' + err.message);
+      }
+    });
+
+    // Initialize
+    loadMembers();
+    displayAttendance();
+  </script>
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

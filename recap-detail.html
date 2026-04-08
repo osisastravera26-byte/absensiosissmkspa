@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Rekapan - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar" style="background: #0066cc;">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="index.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="index.html" style="color: white; text-decoration: none; font-weight: 500;">Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="profil-osis.html" style="color: white; text-decoration: none; font-weight: 500;">Profil OSIS</a>
+          <a href="admin-login.html" style="color: white; text-decoration: none; font-weight: 500;">Admin</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="index.html">Absensi</a>
+        <a href="recap.html">Rekapan</a>
+        <a href="profil-osis.html">Profil OSIS</a>
+        <a href="admin-login.html">Admin</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 1000px;">
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: #0066cc; color: white;">
+            <h4 style="margin: 0;">📊 Detail Rekapan Absensi OSIS</h4>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3">
+                <label class="form-label" style="font-weight: 600;">Dari Tanggal</label>
+                <input type="date" id="startDate" class="form-control" value="">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" style="font-weight: 600;">Sampai Tanggal</label>
+                <input type="date" id="endDate" class="form-control" value="">
+              </div>
+              <div class="col-md-3" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-primary" onclick="filterDetail()" style="width: 100%;">🔍 Filter</button>
+              </div>
+              <div class="col-md-3" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-success" onclick="printDetail()" style="width: 100%;">🖨️ Cetak</button>
+              </div>
+            </div>
+
+            <div id="detailContainer" class="mt-4"></div>
+
+            <div class="mt-3">
+              <a href="recap.html" class="btn btn-secondary">← Kembali ke Rekapan</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const today = App.getTodayDate();
+    
+    // Set default dates
+    document.getElementById('startDate').value = today;
+    document.getElementById('endDate').value = today;
+
+    function loadDetail() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      const details = Storage.getDetailedRecap(startDate, endDate);
+      const container = document.getElementById('detailContainer');
+
+      if (details.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">Belum ada data absensi</p>';
+        return;
+      }
+
+      let html = '';
+      details.forEach((member, index) => {
+        const records = member.records || [];
+        const recordsHtml = records.length === 0 
+          ? '<p class="text-muted">Belum ada data absensi</p>'
+          : '<div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">' +
+            records.map(record => {
+              const badgeClass = record.status === 'hadir' ? 'success' : 'warning';
+              const statusText = record.status === 'hadir' ? 'Hadir' : 'Telat';
+              return `<span class="badge badge-${badgeClass}">
+                ${App.formatDateShort(record.date)}: ${statusText}
+              </span>`;
+            }).join('') + '</div>';
+
+        html += `<div class="card mb-3">
+          <div class="card-header" style="background: #f8f9fa;">
+            <h6 style="margin: 0;"><strong>${index + 1}. ${member.name}</strong></h6>
+          </div>
+          <div class="card-body">
+            ${recordsHtml}
+          </div>
+        </div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function filterDetail() {
+      loadDetail();
+    }
+
+    function printDetail() {
+      window.print();
+    }
+
+    // Initialize
+    loadDetail();
+  </script>
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>

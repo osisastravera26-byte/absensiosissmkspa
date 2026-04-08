@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil OSIS - Absensi Osis SMK Singaparna</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .org-chart {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem 1rem;
+    }
+
+    .org-level {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .level-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      background: #0066cc;
+      padding: 0.8rem 2rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .level-members {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .connector-vertical {
+      width: 3px;
+      height: 50px;
+      background: #0066cc;
+      margin: 0;
+    }
+
+    .sekbid-section {
+      border: 2px solid #0066cc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0.5rem;
+      width: calc(50% - 2rem);
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(0, 102, 204, 0.05);
+    }
+
+    .sekbid-title {
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      background: #0066cc;
+      padding: 0.6rem 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.2rem;
+      width: 100%;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .sekbid-ketua {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .sekbid-divider {
+      width: 2px;
+      height: 30px;
+      background: #0066cc;
+      margin: 0.5rem 0;
+    }
+
+    .sekbid-members {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .osis-card {
+      text-align: center;
+      padding: 1.5rem;
+      background: #0066cc;
+      border-radius: 12px;
+      color: white;
+      min-height: 240px;
+      min-width: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .osis-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .osis-card img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 4px solid white;
+      margin-bottom: 0.8rem;
+      object-fit: cover;
+    }
+
+    .osis-card h5 {
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.95);
+      line-height: 1.3;
+    }
+
+    .osis-card strong {
+      font-size: 0.95rem;
+      color: white;
+      font-weight: 700;
+    }
+
+    .empty-level {
+      color: #999;
+      padding: 2rem;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Photo Modal Styles */
+    .photo-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .photo-modal.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .photo-modal-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90vh;
+      background-color: transparent;
+    }
+
+    .photo-modal-image {
+      width: 100%;
+      height: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .photo-modal-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .photo-modal-close:hover {
+      color: #ff6b6b;
+    }
+
+    .osis-card img {
+      cursor: pointer;
+      transition: filter 0.2s ease;
+    }
+
+    .osis-card img:hover {
+      filter: brightness(1.1);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .level-members {
+        gap: 1rem;
+      }
+
+      .osis-card {
+        min-width: 160px;
+        min-height: 220px;
+        padding: 1rem;
+      }
+
+      .osis-card img {
+        width: 85px;
+        height: 85px;
+        border-width: 3px;
+      }
+
+      .osis-card h5 {
+        font-size: 0.8rem;
+      }
+
+      .osis-card strong {
+        font-size: 0.9rem;
+      }
+
+      .sekbid-section {
+        width: calc(100% - 2rem);
+        margin: 0.5rem 0;
+      }
+
+      .level-title {
+        font-size: 1rem;
+        padding: 0.6rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .org-chart {
+        padding: 1rem 0.5rem;
+      }
+
+      .level-members {
+        gap: 0.8rem;
+      }
+
+      .osis-card {
+        min-width: 140px;
+        min-height: 200px;
+        padding: 0.8rem;
+      }
+
+      .osis-card img {
+        width: 75px;
+        height: 75px;
+        margin-bottom: 0.5rem;
+      }
+
+      .osis-card h5 {
+        font-size: 0.75rem;
+      }
+
+      .osis-card strong {
+        font-size: 0.85rem;
+      }
+
+      .sekbid-members {
+        gap: 0.5rem;
+      }
+
+      .connector-vertical {
+        height: 30px;
+      }
+
+      .level-title {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" style="background: #0066cc;">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a class="navbar-brand" href="index.html" style="color: white; text-decoration: none;"><img src="https://image2url.com/r2/default/images/1775621096445-5f04205e-21b1-4c5e-8b0d-d76fb3f66c9e.png" alt="Logo" style="height: 70px; margin-right: 10px;">Absensi Osis SMK Singaparna</a>
+        <button class="nav-toggle" type="button" onclick="App.toggleSideMenu()" aria-label="Buka menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="nav-links" style="gap: 1rem;">
+          <a href="index.html" style="color: white; text-decoration: none; font-weight: 500;">Absensi</a>
+          <a href="recap.html" style="color: white; text-decoration: none; font-weight: 500;">Rekapan</a>
+          <a href="profil-osis.html" style="color: white; text-decoration: none; font-weight: 500; border-bottom: 3px solid white;">Profil OSIS</a>
+          <a href="admin-login.html" style="color: white; text-decoration: none; font-weight: 500;">Admin</a>
+        </div>
+      </div>
+      <div id="sideMenuOverlay" class="side-menu-overlay" onclick="App.closeSideMenu()"></div>
+      <aside id="sideMenu" class="side-menu" role="menu" aria-hidden="true">
+        <button class="side-menu-close" type="button" onclick="App.closeSideMenu()" aria-label="Tutup menu">&times;</button>
+        <a href="index.html" onclick="App.closeSideMenu()">Absensi</a>
+        <a href="recap.html" onclick="App.closeSideMenu()">Rekapan</a>
+        <a href="profil-osis.html" onclick="App.closeSideMenu()" style="border-bottom: 3px solid #0066cc;">Profil OSIS</a>
+        <a href="admin-login.html" onclick="App.closeSideMenu()">Admin</a>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div style="display: flex; justify-content: center;">
+      <div style="width: 100%; max-width: 1200px;">
+        <div class="card shadow-lg">
+          <div class="card-header" style="background: #0066cc; color: white;">
+            <h4 style="margin: 0;">Struktur Organisasi OSIS SMK Singaparna</h4>
+          </div>
+          <div class="card-body">
+            <div id="osisStructureContainer" class="org-chart">
+              <p class="empty-level">Memuat struktur organisasi...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertContainer"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    function loadOsisStructure() {
+      const allData = Storage.getAllOsisStructure();
+      const container = document.getElementById('osisStructureContainer');
+
+      // Group by level and sekbid
+      const levels = {
+        'pembina': [],
+        'ketua': [],
+        'inti': [], // BPH (Badan Pengurus Harian): Sekretaris, Wakil Sekretaris, Bendahara, Wakil Bendahara
+        'sekbid': {}
+      };
+
+      allData.forEach(member => {
+        const level = member.level || '';
+        const position = (member.position || '').toLowerCase();
+        
+        if (level === 'pembina' || position.includes('pembina')) {
+          levels.pembina.push(member);
+        } else if (level === 'ketua' || position === 'ketua osis' || position === 'wakil ketua') {
+          levels.ketua.push(member);
+        } else if (level === 'sekbid' || position.includes('ketua sekbid') || position.includes('ketua seksi')) {
+          const sekbidNum = member.parentLevel || position.match(/\d+/)?.[0] || '1';
+          if (!levels.sekbid[sekbidNum]) levels.sekbid[sekbidNum] = { ketua: null, members: [] };
+          
+          if (position.includes('ketua')) {
+            levels.sekbid[sekbidNum].ketua = member;
+          } else {
+            levels.sekbid[sekbidNum].members.push(member);
+          }
+        } else if (level === 'member' || position.includes('anggota')) {
+          // Anggota umum - tambah ke sekbid jika ada parentLevel
+          const sekbidNum = member.parentLevel || '1';
+          if (!levels.sekbid[sekbidNum]) levels.sekbid[sekbidNum] = { ketua: null, members: [] };
+          levels.sekbid[sekbidNum].members.push(member);
+        } else {
+          // BPH (Badan Pengurus Harian): Sekretaris, Wakil Sekretaris, Bendahara, Wakil Bendahara
+          levels.inti.push(member);
+        }
+      });
+
+      let html = '';
+
+      // === PEMBINA ===
+      html += '<div class="org-level">';
+      html += '<div class="level-title">PEMBINA</div>';
+      if (levels.pembina.length > 0) {
+        html += '<div class="level-members">';
+        levels.pembina.forEach(member => {
+          html += renderMember(member);
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="empty-level">Belum ada pembina</div>';
+      }
+      html += '</div>';
+
+      if (levels.pembina.length > 0 && (levels.ketua.length > 0 || Object.keys(levels.sekbid).length > 0)) {
+        html += '<div class="connector-vertical"></div>';
+      }
+
+      // === KETUA OSIS ===
+      html += '<div class="org-level">';
+      html += '<div class="level-title">KETUA OSIS</div>';
+      if (levels.ketua.length > 0) {
+        html += '<div class="level-members">';
+        levels.ketua.forEach(member => {
+          html += renderMember(member);
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="empty-level">Belum ada ketua OSIS</div>';
+      }
+      html += '</div>';
+
+      if ((levels.ketua.length > 0 || levels.pembina.length > 0) && levels.inti.length > 0) {
+        html += '<div class="connector-vertical"></div>';
+      }
+
+      // === BPH (BADAN PENGURUS HARIAN) (Sekretaris, Wakil Sekretaris, Bendahara, Wakil Bendahara) ===
+      if (levels.inti.length > 0) {
+        html += '<div class="org-level">';
+        html += '<div class="level-title">BPH (BADAN PENGURUS HARIAN)</div>';
+        html += '<div class="level-members">';
+        levels.inti.forEach(member => {
+          html += renderMember(member);
+        });
+        html += '</div></div>';
+
+        html += '<div class="connector-vertical"></div>';
+      }
+
+      // === SEKSI-SEKSI BIDANG ===
+      const hasSekbid = Object.keys(levels.sekbid).some(key => 
+        levels.sekbid[key].ketua || levels.sekbid[key].members.length > 0
+      );
+
+      if (hasSekbid) {
+        html += '<div class="org-level">';
+        html += '<div class="level-title">SEKSI-SEKSI BIDANG</div>';
+        html += '<div style="display: flex; flex-wrap: wrap; justify-content: center; width: 100%; gap: 1rem;">';
+
+        for (let i = 1; i <= 8; i++) {
+          const sekbid = levels.sekbid[i];
+          if (sekbid && (sekbid.ketua || sekbid.members.length > 0)) {
+            html += renderSekbidSection(i, sekbid);
+          }
+        }
+
+        html += '</div></div>';
+      }
+
+      container.innerHTML = html || '<div class="empty-level">Belum ada data struktur OSIS</div>';
+    }
+
+    function renderSekbidSection(sekbidNum, sekbidData) {
+      let html = `<div class="sekbid-section">
+        <div class="sekbid-title">Seksi Bidang ${sekbidNum}</div>`;
+
+      if (sekbidData.ketua) {
+        html += `<div class="sekbid-ketua">${renderMember(sekbidData.ketua)}</div>`;
+        
+        if (sekbidData.members.length > 0) {
+          html += '<div class="sekbid-divider"></div>';
+        }
+      }
+
+      if (sekbidData.members.length > 0) {
+        html += '<div class="sekbid-members">';
+        sekbidData.members.forEach(member => {
+          html += renderMember(member);
+        });
+        html += '</div>';
+      } else if (!sekbidData.ketua) {
+        html += '<div class="empty-level">Belum ada anggota</div>';
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    function renderMember(member) {
+      const photoUrl = member.photo || 'https://via.placeholder.com/100?text=No+Photo';
+      const position = member.position || 'Posisi Tidak Ditentukan';
+      const name = member.name || 'Nama Tidak Ditentukan';
+
+      return `<div class="osis-card">
+        <img src="${photoUrl}" alt="${name}" onclick="openPhotoModal('${photoUrl.replace(/'/g, "\\'")}')" onerror="handleImageError(this)" onload="handleImageLoad(this)">
+        <h5>${position}</h5>
+        <strong>${name}</strong>
+      </div>`;
+    }
+
+    function handleImageError(img) {
+      img.src = 'https://via.placeholder.com/100?text=No+Photo';
+    }
+
+    function handleImageLoad(img) {
+      // Image loaded successfully
+    }
+
+    // Photo Modal Functions
+    function openPhotoModal(photoUrl) {
+      const modal = document.getElementById('photoModal');
+      const modalImage = document.getElementById('photoModalImage');
+      modalImage.src = photoUrl;
+      modalImage.onerror = function() {
+        this.src = 'https://via.placeholder.com/400?text=No+Photo';
+      };
+      modal.classList.add('active');
+    }
+
+    function closePhotoModal() {
+      const modal = document.getElementById('photoModal');
+      modal.classList.remove('active');
+    }
+
+    // Close modal when clicking overlay
+    document.addEventListener('DOMContentLoaded', () => {
+      loadOsisStructure();
+      
+      const modal = document.getElementById('photoModal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closePhotoModal();
+          }
+        });
+      }
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closePhotoModal();
+        }
+      });
+    });
+
+    // Legacy Load structure
+    // document.addEventListener('DOMContentLoaded', loadOsisStructure);
+  </script>
+  
+  <!-- Photo Modal -->
+  <div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
+    <div class="photo-modal-content" onclick="event.stopPropagation()">
+      <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
+      <img id="photoModalImage" src="" alt="Photo" class="photo-modal-image">
+    </div>
+  </div>
+
+  <footer style="text-align: center; padding: 1rem; font-size: 0.8rem; color: #666;">by: alhadi</footer>
+</body>
+</html>
